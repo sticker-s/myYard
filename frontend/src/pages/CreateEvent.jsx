@@ -39,6 +39,17 @@ const CreateEvent = () => {
     }
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm({ ...form, image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -98,8 +109,18 @@ const CreateEvent = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Image URL</label>
-              <input type="url" placeholder="https://..." value={form.image} onChange={e => setForm({...form, image: e.target.value})} className="w-full p-2.5 border rounded-lg bg-gray-50 dark:bg-gray-900 dark:border-gray-700 focus:ring-2 focus:ring-retroPrimary" />
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Event Image</label>
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleImageUpload} 
+                className="w-full p-2.5 border rounded-lg bg-gray-50 dark:bg-gray-900 dark:border-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-retroPrimary/10 file:text-retroPrimary hover:file:bg-retroPrimary/20 dark:file:bg-darkPrimary/10 dark:file:text-darkPrimary dark:hover:file:bg-darkPrimary/20 cursor-pointer" 
+              />
+              {form.image && (
+                <div className="mt-3 relative h-40 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                  <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
             </div>
           </div>
 

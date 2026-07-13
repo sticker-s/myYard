@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { format } from 'date-fns';
 import { Ticket as TicketIcon, Calendar, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import QRCode from 'react-qr-code';
 
 const MyTickets = () => {
   const { api } = useAuth();
@@ -70,6 +71,17 @@ const MyTickets = () => {
                     <div className="flex items-center gap-2"><Calendar className="w-4 h-4"/> {ticket.event ? format(new Date(ticket.event.date), 'MMM d, yyyy h:mm a') : 'N/A'}</div>
                     <div className="flex items-center gap-2"><MapPin className="w-4 h-4"/> <span className="truncate">{ticket.event?.location || 'N/A'}</span></div>
                   </div>
+                  
+                  {ticket.status === 'paid' && (
+                    <div className="mt-4 mb-2 flex flex-col items-center">
+                      <div className="bg-white p-2 rounded-xl inline-block border border-gray-100">
+                        <QRCode value={ticket._id} size={90} />
+                      </div>
+                      <p className="mt-2 text-xs font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300 select-all">
+                        {ticket._id}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">

@@ -9,7 +9,9 @@ const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('events'); // events | tickets
+  const [activeTab, setActiveTab] = useState('events'); // events | tickets | scanner
+  const [scanId, setScanId] = useState('');
+  const [scanMessage, setScanMessage] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -50,6 +52,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleScan = async (e) => {
+    e.preventDefault();
+    if (!scanId.trim()) return;
+
+    try {
+      const res = await api.put(`/tickets/validate/${scanId.trim()}`);
+      setScanMessage({ type: 'success', text: res.data.message });
+      fetchData();
+    } catch (error) {
+      setScanMessage({ type: 'error', text: error.response?.data?.message || 'Failed to validate ticket' });
+    }
+    setScanId('');
+  };
+
   if (loading) return <div className="py-10 text-center">Loading dashboard...</div>;
 
   return (
@@ -82,6 +98,13 @@ const AdminDashboard = () => {
         >
           Ticket Sales
           {activeTab === 'tickets' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-retroPrimary dark:bg-darkPrimary"></div>}
+        </button>
+        <button 
+          onClick={() => setActiveTab('scanner')}
+          className={`pb-3 px-4 font-semibold text-sm transition-colors relative flex items-center gap-2 ${activeTab === 'scanner' ? 'text-retroPrimary dark:text-darkPrimary' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'}`}
+        >
+          <Activity className="w-4 h-4" /> Validate Tickets
+          {activeTab === 'scanner' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-retroPrimary dark:bg-darkPrimary"></div>}
         </button>
       </div>
 
@@ -202,6 +225,48 @@ const AdminDashboard = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'scanner' && (
+        <div className="max-w-md mx-auto mt-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Activity className="w-8 h-8 text-retroPrimary dark:text-darkPrimary" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">QR Code Scanner</h2>
+            <p className="text-sm text-gray-500 mt-2">Simulate scanning by pasting the Ticket ID below</p>
+          </div>
+
+          <form onSubmit={handleScan} className="space-y-4">
+            <div>
+              <input 
+                type="text" 
+                placeholder="Enter or paste Ticket ID..." 
+                value={scanId}
+                onChange={(e) => setScanId(e.target.value)}
+                className="w-full text-center p-3 border rounded-lg bg-gray-50 dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-retroPrimary dark:focus:ring-darkPrimary tracking-wider font-mono"
+                required 
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="w-full py-3 bg-retroPrimary hover:bg-retroPrimary/90 dark:bg-darkPrimary dark:hover:bg-darkPrimary/90 text-white dark:text-gray-900 font-bold rounded-lg transition"
+            >
+              Validate Ticket
+            </button>
+          </form>
+
+          {scanMessage && (
+            <div className={`mt-6 p-4 rounded-lg flex items-center gap-3 ${
+              scanMessage.type === 'success' 
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800' 
+                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800'
+            }`}>
+              <div className="flex-1 font-semibold">{scanMessage.text}</div>
+              <button onClick={() => setScanMessage(null)} className="opacity-50 hover:opacity-100">✕</button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -64,20 +64,43 @@ router.get('/admin', protect, admin, async (req, res) => {
   }
 });
 
-// @route PUT /api/tickets/:id/status (Admin mark ticket status)
+// @route PUT /api/tickets/:id/status (Admin update ticket status)
 router.put('/:id/status', protect, admin, async (req, res) => {
   try {
-    const { status } = req.body;
     const ticket = await Ticket.findById(req.params.id);
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
 
-    if (ticket) {
-      ticket.status = status;
-      const updatedTicket = await ticket.save();
-      res.json(updatedTicket);
-    } else {
-      res.status(404).json({ message: 'Ticket not found' });
-    }
+    ticket.status = req.body.status;
+    await ticket.save();
+    res.json(ticket);
   } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// @route PUT /api/tickets/validate/:id (Admin validate/scan QR ticket)
+router.put('/validate/:id', protect, admin, async (req, res) => {
+  try {
+    const ticket = await Ticket.findById(req.params.id).populate('event', 'title date');
+    if (!ticket) return res.status(404).json({ message: 'Ticket not found' });
+
+    if (ticket.status === 'used') {
+      return res.status(400).json({ message: 'Ticket has already been used!', ticket });
+    }
+    
+    if (ticket.status === 'cancelled') {
+      return res.status(400).json({ message: 'Ticket was cancelled!', ticket });
+    }
+
+    ticket.status = 'used';
+    await ticket.save();
+    
+    res.json({ message: 'Ticket validated successfully!', ticket });
+  } catch (error) {
+    // If it's a cast error, it's an invalid ID format
+    if (error.name === 'CastError') {
+      return res.status(404).json({ message: 'Invalid ticket ID format' });
+    }
     res.status(500).json({ message: 'Server Error' });
   }
 });
