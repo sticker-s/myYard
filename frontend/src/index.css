@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Common variables for themes if needed, handled by Tailwind config mostly */
+  body {
+    @apply transition-colors duration-300;
+  }
+}
