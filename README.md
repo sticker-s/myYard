@@ -50,7 +50,7 @@ Follow these steps to run the project locally on your machine.
 3. Create a `.env` file in the `backend` folder and add the following:
    ```env
    PORT=5000
-   MONGO_URI=mongodb://localhost:27017/myyard
+   MONGO_URI=your_mongo_uri
    JWT_SECRET=your_super_secret_jwt_key
    ```
 4. Start the backend server:
